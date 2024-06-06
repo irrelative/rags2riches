@@ -28,4 +28,9 @@ CREATE TABLE Post (
 CREATE INDEX idx_post_posttypeid ON Post (PostTypeId);
 
 -- Example index on ParentId to speed up queries filtering by this column
-CREATE INDEX idx_post_parentid ON Post (ParentId);
+CREATE TABLE embedding_search (
+    id SERIAL PRIMARY KEY,
+    post_id INT,
+    embedding VECTOR(1536),
+    FOREIGN KEY (post_id) REFERENCES Post(id)
+);
