@@ -1,13 +1,14 @@
 import psycopg2
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 # Configure your OpenAI API key
-openai.api_key = 'YOUR_OPENAI_API_KEY'
 
 def create_embeddings(texts):
     texts = [text[:8191] for text in texts]
-    response = openai.Embedding.create(input=texts, model="text-embedding-ada-002")
-    return [data['embedding'] for data in response['data']]
+    response = client.embeddings.create(input=texts, model="text-embedding-ada-002")
+    return [data.embedding for data in response.data]
 
 
 # Connect to the PostgreSQL database
@@ -22,6 +23,7 @@ try:
     # Process each post
     batch_size = 1000
     for i in range(0, len(posts), batch_size):
+        print(f"Processing batch {i // batch_size + 1}/{len(posts) // batch_size + 1}")
         batch = posts[i:i + batch_size]
         ids, bodies = zip(*batch)
 
@@ -35,8 +37,8 @@ try:
                 VALUES (%s, %s)
             """, (post_id, embedding))
 
-    # Commit the transaction
-    conn.commit()
+        # Commit the transaction
+        conn.commit()
 
 finally:
     # Close the database connection
